@@ -45,8 +45,8 @@ namespace LORAPI.Controllers
         public async Task<ActionResult<User>> GetLogin(string username, string password)
         {
             Database db = new Database();
-
-            var user = await _context.Users.FindAsync(db.UserLogin(username, password));
+            // SALT password
+            var user = await _context.Users.FindAsync(db.UserLogin(username, Convert.ToBase64String(SALT.GenerateSalt(password))));
 
             if (user == null)
             {
@@ -58,6 +58,7 @@ namespace LORAPI.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // Update, username skal checkes efter dupletter. Der skal laves SALT på password.
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
@@ -65,37 +66,55 @@ namespace LORAPI.Controllers
             {
                 return BadRequest();
             }
-
+            User activeUser = await _context.Users.FindAsync(id);
+            user.Password = Convert.ToBase64String(SALT.GenerateSalt(user.Password));
             _context.Entry(user).State = EntityState.Modified;
-
-            try
+            if (activeUser.Username == user.Username || !UsernameExists(user.Username))
             {
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Hvis id ikke existere. Hvis user.username existere, undtaget når 
+                    if (!UserExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
-            catch (DbUpdateConcurrencyException)
+            else
             {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+                return BadRequest("Username already exists");
+            }            
             return NoContent();
         }
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]  // Works
+        // Create, username skal checke efter dupletter. Der skal laves SALT på password.
+        [HttpPost]  
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            User newUser = user;
+            newUser.Password = Convert.ToBase64String(SALT.GenerateSalt(newUser.Password));
+            if (UsernameExists(user.Username))
+            {
+                return BadRequest();
+            }
+            else
+            {
+                // user.Password = Convert.ToBase64String(SALT.GenerateSalt(user.Password));
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.UserID }, user);
+                return CreatedAtAction("GetUser", new { id = newUser.UserID }, newUser);
+            }
         }
 
         // DELETE: api/Users/5
@@ -117,6 +136,11 @@ namespace LORAPI.Controllers
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserID == id);
+        }
+
+        private bool UsernameExists(string username)
+        {
+            return _context.Users.Any(e => e.Username == username);
         }
     }
 }
