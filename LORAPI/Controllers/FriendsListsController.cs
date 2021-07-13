@@ -43,11 +43,24 @@ namespace LORAPI.Controllers
             return friendsList;
         }
 
-        [HttpGet("Pending/{id}")]
-        public async Task<ActionResult<IEnumerable<User>>> GetPendingList(int id)
+        [HttpGet("PendingIn/{id}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetPendingInList(int id)
         {
             Database db = new Database();
-            List<User> friendsList = await db.UsersPendingList(id);
+            List<User> friendsList = await db.UsersPendingInList(id);
+
+            if (friendsList == null)
+            {
+                return NotFound();
+            }
+            return friendsList;
+        }
+
+        [HttpGet("PendingOut/{id}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetPendingOutList(int id)
+        {
+            Database db = new Database();
+            List<User> friendsList = await db.UsersPendingOutList(id);
 
             if (friendsList == null)
             {
@@ -98,7 +111,7 @@ namespace LORAPI.Controllers
             return CreatedAtAction("GetFriendsList", new { id = friendsList.UserFriendID }, friendsList);
         }
 
-        [HttpPost("friendsname")]
+        [HttpPost("{friendsname}")]
         public async Task<ActionResult<FriendsList>> AddFriend(string friendsName, FriendsList friendsList)
         {
             Database db = new Database();                 
@@ -130,10 +143,11 @@ namespace LORAPI.Controllers
         }
 
         // DELETE: api/FriendsLists/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFriendsList(int id)
+        [HttpDelete("{userid}/{friendid}")]
+        public async Task<IActionResult> DeleteFriendsList(int userid, int friendid)
         {
-            var friendsList = await _context.FriendsLists.FindAsync(id);
+            Database db = new Database();
+            var friendsList = await _context.FriendsLists.FindAsync(db.deleteFriend(userid, friendid));
             if (friendsList == null)
             {
                 return NotFound();

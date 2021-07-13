@@ -5,16 +5,14 @@ using System.Threading.Tasks;
 
 namespace LORAPI.Models
 {
-    public class User
+    public class UserDTO
     {
-        public User()
+        // DTO står for Data Transfer Object. Det bliver brugt når man vil overføre en entitet, men uden en eller flere properties.
+        public UserDTO()
         {
 
         }
-        public int? UserID { get; set; }
         public string Username { get; set; }
-        public string Password { get; set; }
         public string Email { get; set; }
-        public string Role { get; set; }
     }
 }

@@ -117,7 +117,7 @@ namespace LORAPI.Controllers
             return friendsList;
         }
 
-        public async Task<List<User>> UsersPendingList(int id)
+        public async Task<List<User>> UsersPendingInList(int id)
         {
             List<User> friendsList = new List<User>();
             await using (SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LORDB;MultipleActiveResultSets=true;User ID=LORUser;Password=Passw0rd"))
@@ -146,6 +146,110 @@ namespace LORAPI.Controllers
                 }                
             }
             return friendsList;
+        }
+
+        public async Task<List<User>> UsersPendingOutList(int id)
+        {
+            List<User> friendsList = new List<User>();
+            await using (SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LORDB;MultipleActiveResultSets=true;User ID=LORUser;Password=Passw0rd"))
+            {
+                using (SqlCommand cmd = new SqlCommand($"select * from [User] inner join Friendslist on [User].UserID = Friendslist.FriendID where Friendslist.UserID = {id} and StatusID = 2;", con))
+                {
+                    con.Open();
+                    try
+                    {
+                        SqlDataReader sdr = cmd.ExecuteReader();
+                        while (sdr.Read())
+                        {
+                            User newUser = new User();
+                            newUser.UserID = Convert.ToInt32(sdr[0]);
+                            newUser.Username = sdr.GetString(1);
+                            newUser.Password = sdr.GetString(2);
+                            newUser.Email = sdr.GetString(3);
+                            newUser.Role = sdr.GetString(4);
+                            friendsList.Add(newUser);
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        //MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            return friendsList;
+        }
+
+        public int deleteFriend(int userID, int friendID)
+        {
+            int id = 0;
+            using (SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LORDB;MultipleActiveResultSets=true;User ID=LORUser;Password=Passw0rd"))
+            {
+                using (SqlCommand cmd = new SqlCommand($"select * from FriendsList where UserID = {userID} and FriendID = {friendID};", con))
+                {
+                    con.Open();
+                    try
+                    {
+                        SqlDataReader sdr = cmd.ExecuteReader();
+                        while (sdr.Read())
+                        {
+                            id = Convert.ToInt32(sdr[0]);
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        //MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+
+                using (SqlCommand cmd = new SqlCommand($"select * from FriendsList where FriendID = {userID} and UserID = {friendID};", con))
+                {
+                    con.Open();
+                    try
+                    {
+                        SqlDataReader sdr = cmd.ExecuteReader();
+                        while (sdr.Read())
+                        {
+                            id = Convert.ToInt32(sdr[0]);
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        //MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            return id;
+        }
+        
+        public User OldUserInfo(int id)
+        {
+            User user = new User();
+            using (SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LORDB;MultipleActiveResultSets=true;User ID=LORUser;Password=Passw0rd"))
+            {
+                using (SqlCommand cmd = new SqlCommand($"select * from [User] where UserID = {id};", con)) // Fejl hvis bruger skal hedde det samme.
+                {
+                    con.Open();
+                    try
+                    {
+                        SqlDataReader sdr = cmd.ExecuteReader();
+                        while (sdr.Read())
+                        {
+                            User newUser = new User();
+                            newUser.UserID = Convert.ToInt32(sdr[0]);
+                            newUser.Username = sdr.GetString(1);
+                            newUser.Password = sdr.GetString(2);
+                            newUser.Email = sdr.GetString(3);
+                            newUser.Role = sdr.GetString(4);
+                            user = newUser;
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        //MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            return user;
         }
     }
 }

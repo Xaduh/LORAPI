@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using LORAPI.Models;
 
 namespace LORAPI.Controllers
-{
+{    
     [Route("api/Users")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -29,32 +29,36 @@ namespace LORAPI.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}")]   // Works
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            User user = await _context.Users.FindAsync(id);
+
+            UserDTO safeUser = new UserDTO();
+            safeUser.Username = user.Username;
+            safeUser.Email = user.Email;
 
             if (user == null)
             {
                 return NotFound();
             }
 
-            return user;
+            return safeUser;
         }
 
-        [HttpGet("{username}/{password}")]
-        public async Task<ActionResult<User>> GetLogin(string username, string password)
-        {
-            Database db = new Database();
-            // SALT password
-            var user = await _context.Users.FindAsync(db.UserLogin(username, Convert.ToBase64String(SALT.GenerateSalt(password))));
+        //[HttpGet("{username}/{password}")]
+        //public async Task<ActionResult<User>> GetLogin(string username, string password)
+        //{
+        //    Database db = new Database();
+        //    // SALT password
+        //    var user = await _context.Users.FindAsync(db.UserLogin(username, Convert.ToBase64String(SALT.GenerateSalt(password))));
 
-            if (user == null)
-            {
-                return BadRequest();
-            }
+        //    if (user == null)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            return user;
-        }
+        //    return user;
+        //}
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -62,25 +66,39 @@ namespace LORAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
-            if (id != user.UserID)
+            Database db = new Database();
+            User activeUser = db.OldUserInfo(id);
+            if(user.Username == "" || user.Username == null)
             {
-                return BadRequest();
+                user.Username = activeUser.Username;
             }
-            User activeUser = await _context.Users.FindAsync(id);
-            user.Password = Convert.ToBase64String(SALT.GenerateSalt(user.Password));
-            _context.Entry(user).State = EntityState.Modified;
-            if (activeUser.Username == user.Username || !UsernameExists(user.Username))
+            if (user.Password == "" || user.Password == null)
             {
+                user.Password = activeUser.Password;
+            }
+            else
+            {
+                user.Password = Convert.ToBase64String(SALT.GenerateSalt(user.Password));
+            }
+            if (user.Email == "" || user.Email == null)
+            {
+                user.Email = activeUser.Email;
+            }
+            user.Role = activeUser.Role;
+            user.UserID = id;
+            
+            if (!UsernameExists(user.Username) || activeUser.Username == user.Username)   
+            {                
+                _context.Entry(user).State = EntityState.Modified;
                 try
                 {
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    // Hvis id ikke existere. Hvis user.username existere, undtaget når 
                     if (!UserExists(id))
                     {
-                        return NotFound();
+                        return NotFound();                        
                     }
                     else
                     {
@@ -102,19 +120,38 @@ namespace LORAPI.Controllers
         public async Task<ActionResult<User>> PostUser(User user)
         {
             User newUser = user;
-            newUser.Password = Convert.ToBase64String(SALT.GenerateSalt(newUser.Password));
-            if (UsernameExists(user.Username))
+            if (user.Username == "" || user.Password == "" || user.Email == "" || user.Role == "")
+            {
+                // Forbidden.
+                return StatusCode(403);
+            }
+            else if (UsernameExists(user.Username))
             {
                 return BadRequest();
             }
             else
             {
-                // user.Password = Convert.ToBase64String(SALT.GenerateSalt(user.Password));
+                newUser.Password = Convert.ToBase64String(SALT.GenerateSalt(newUser.Password));
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetUser", new { id = newUser.UserID }, newUser);
             }
+        }
+
+        [HttpPost("Login")]
+        public async Task<ActionResult<int>> Login(User user)
+        {
+            Database db = new Database();
+            // SALT password
+            var foundUser = await _context.Users.FindAsync(db.UserLogin(user.Username, Convert.ToBase64String(SALT.GenerateSalt(user.Password))));
+
+            if (foundUser == null)
+            {
+                return NotFound();
+            }
+
+            return foundUser.UserID.Value;
         }
 
         // DELETE: api/Users/5
