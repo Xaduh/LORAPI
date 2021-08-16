@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LORAPI.Controllers
@@ -64,25 +65,22 @@ namespace LORAPI.Controllers
             return id;
         }
 
-        public async Task<List<User>> UsersFriendsList(int id)
+        public async Task<List<UserDTO>> UsersFriendsList(int id)
         {
-            List<User> friendsList = new List<User>();
+            List<UserDTO> friendsList = new List<UserDTO>();
             await using (SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LORDB;MultipleActiveResultSets=true;User ID=LORUser;Password=Passw0rd"))
             {
+                con.Open();
                 using (SqlCommand cmd = new SqlCommand($"select * from [User] inner join Friendslist on [User].UserID = Friendslist.UserID where Friendslist.FriendID = {id} and StatusID = 1;", con))
                 {
-                    con.Open();
                     try
                     {
                         SqlDataReader sdr = cmd.ExecuteReader();
                         while (sdr.Read())
                         {
-                            User newUser = new User();
+                            UserDTO newUser = new UserDTO();
                             newUser.UserID = Convert.ToInt32(sdr[0]);
                             newUser.Username = sdr.GetString(1);
-                            newUser.Password = sdr.GetString(2);
-                            newUser.Email = sdr.GetString(3);
-                            newUser.Role = sdr.GetString(4);
                             friendsList.Add(newUser);
                         }
                     }
@@ -93,18 +91,17 @@ namespace LORAPI.Controllers
                 }
                 using (SqlCommand cmd = new SqlCommand($"select * from [User] inner join Friendslist on [User].UserID = Friendslist.FriendID where Friendslist.UserID = {id} and StatusID = 1;", con))
                 {
-                    con.Open();
                     try
                     {
                         SqlDataReader sdr = cmd.ExecuteReader();
                         while (sdr.Read())
                         {
-                            User newUser = new User();
+                            UserDTO newUser = new UserDTO();
                             newUser.UserID = Convert.ToInt32(sdr[0]);
                             newUser.Username = sdr.GetString(1);
-                            newUser.Password = sdr.GetString(2);
-                            newUser.Email = sdr.GetString(3);
-                            newUser.Role = sdr.GetString(4);
+                            //newUser.Password = sdr.GetString(2);
+                            //newUser.Email = sdr.GetString(3);
+                            //newUser.Role = sdr.GetString(4);
                             friendsList.Add(newUser);
                         }
                     }

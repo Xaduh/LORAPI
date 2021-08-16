@@ -30,10 +30,10 @@ namespace LORAPI.Controllers
 
         // GET: api/FriendsLists/5
         [HttpGet("Friends/{id}")]
-        public async Task<ActionResult<IEnumerable<User>>> GetFriendsList(int id)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetFriendsList(int id)
         {
             Database db = new Database();
-            List<User> friendsList = await db.UsersFriendsList(id);
+            List<UserDTO> friendsList = await db.UsersFriendsList(id);
 
             if (friendsList == null)
             {

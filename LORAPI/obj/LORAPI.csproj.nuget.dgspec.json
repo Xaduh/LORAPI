@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Administrator\\Source\\Repos\\LORAPI\\LORAPI\\LORAPI.csproj": {}
+    "C:\\Users\\Administrator\\source\\repos\\LORAPI\\LORAPI\\LORAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Administrator\\Source\\Repos\\LORAPI\\LORAPI\\LORAPI.csproj": {
+    "C:\\Users\\Administrator\\source\\repos\\LORAPI\\LORAPI\\LORAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Administrator\\Source\\Repos\\LORAPI\\LORAPI\\LORAPI.csproj",
+        "projectUniqueName": "C:\\Users\\Administrator\\source\\repos\\LORAPI\\LORAPI\\LORAPI.csproj",
         "projectName": "LORAPI",
-        "projectPath": "C:\\Users\\Administrator\\Source\\Repos\\LORAPI\\LORAPI\\LORAPI.csproj",
+        "projectPath": "C:\\Users\\Administrator\\source\\repos\\LORAPI\\LORAPI\\LORAPI.csproj",
         "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Administrator\\Source\\Repos\\LORAPI\\LORAPI\\obj\\",
+        "outputPath": "C:\\Users\\Administrator\\source\\repos\\LORAPI\\LORAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

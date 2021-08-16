@@ -28,22 +28,22 @@ namespace LORAPI.Controllers
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]   // Works
-        public async Task<ActionResult<UserDTO>> GetUser(int id)
-        {
-            User user = await _context.Users.FindAsync(id);
+        //[HttpGet("{id}")]   // Works
+        //public async Task<ActionResult<UserDTO>> GetUser(int id)
+        //{
+        //    User user = await _context.Users.FindAsync(id);
 
-            UserDTO safeUser = new UserDTO();
-            safeUser.Username = user.Username;
-            safeUser.Email = user.Email;
+        //    UserDTO safeUser = new UserDTO();
+        //    safeUser.Username = user.Username;
+        //    safeUser.Email = user.Email;
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return safeUser;
-        }
+        //    return safeUser;
+        //}
 
         //[HttpGet("{username}/{password}")]
         //public async Task<ActionResult<User>> GetLogin(string username, string password)
